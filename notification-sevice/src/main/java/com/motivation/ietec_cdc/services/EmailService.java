@@ -30,9 +30,6 @@ public class EmailService {
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
 
-    @Value("${frontend.url}")
-    private String frontendUrl;
-
     public void sendLink(MailRequestBase mailRequest) throws Exception {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -53,7 +50,7 @@ public class EmailService {
         }
 
         // Nutze die Frontend-URL aus der Konfiguration
-        context.setVariable("resetLink", frontendUrl + "/reset-password?token=" + mailRequest.getToken());
+        context.setVariable("resetLink", "localhost:8080" + "/reset-password?token=" + mailRequest.getToken());
         String htmlContent = templateEngine.process("reset_password", context);
         helper.setText(htmlContent, true);
 

@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/reset-request").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/auth/create-request").hasRole("CREATOR")
+                                .requestMatchers(HttpMethod.GET, "/auth/test-ip/**").permitAll()
                                 .requestMatchers("/security-swagger/**", "/v3/api-docs").permitAll()
                                 .anyRequest().authenticated())
                                 .addFilterBefore(new JwtAuthenticationFilter(loadPublicKey()), UsernamePasswordAuthenticationFilter.class);

@@ -15,16 +15,26 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ietecusers
+    url: jdbc:mysql://192.168.254.20:3306/ietecusers
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: root
 
 server:
   port: 8083
+  ip: ${CUSTOM_SERVER_IP:localhost}
 
 jwt:
   secret: secret
 
 aes:
   password: MySuperSecretPassword123!
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.254.10:8761/eureka/
+    registerWithEureka: true
+    fetchRegistry: true
+  instance:
+    preferIpAddress: true

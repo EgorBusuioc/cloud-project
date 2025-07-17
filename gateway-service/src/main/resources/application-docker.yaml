@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 springdoc:
   api-docs:
@@ -25,15 +25,15 @@ spring:
         - AddResponseHeader=X-Gateway-Service, EgorS-Gateway
       routes:
         - id: security-service
-          uri: lb://security-service:8083
+          uri: lb://security-service
           predicates:
             - Path=/security-swagger/**, /auth/**
         - id: data-service
-          uri: lb://data-service:8084
+          uri: lb://data-service
           predicates:
             - Path=/data-swagger/**, /post-questionnaires/**, /diagnostic-sheets/**, /pre-questionnaires/**, /api/**, /management/**, /diagram-detail-changes/**
           filters:
-            - AddRequestHeader=X-API-KEY,SuperSecretApiWord
+            - AddRequestHeader=GatewayIP,${CUSTOM_SERVER_IP:localhost}
   security:
     oauth2:
       resourceserver:
@@ -46,7 +46,7 @@ secret-api:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://192.168.255.10:8761/eureka/
+      defaultZone: http://192.168.254.10:8761/eureka/
     registerWithEureka: true
     fetchRegistry: true
   instance:

@@ -27,6 +27,9 @@ public class JWTGlobalFilter implements GlobalFilter, Ordered {
     @Value("${secret-api.key}")
     private String secretKey; // Assuming this is injected from application properties
 
+    @Value("${server.ip}")
+    private String serverIp; // Assuming this is injected from application properties
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
@@ -46,6 +49,7 @@ public class JWTGlobalFilter implements GlobalFilter, Ordered {
                     .header("X-User-Id", userId)
                     .header("X-User-Role", userRole)
                     .header("X-API-KEY", secretKey) // Adding the secret key to the request headers
+                    .header("GatewayIP", serverIp) // Adding the server IP to the request headers
                     .build();
 
             return chain.filter(exchange.mutate().request(request).build());

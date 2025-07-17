@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,9 @@ public class AuthController {
 
     private final AuthService authService;
     private final BindingResultService bindingResultService;
+
+    @Value("${server.ip}")
+    private String serverIp;
 
     /**
      * Registers a new user with the provided details.
@@ -113,5 +117,16 @@ public class AuthController {
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
+    }
+
+    @GetMapping("/test-ip/with-header")
+    public ResponseEntity<String> testCurrentIP(@RequestHeader("GatewayIP") String gatewayIp) {
+        return ResponseEntity.ok("You're accessing the security-server with IP: " + serverIp +
+                " and the Gateway IP is: " + gatewayIp);
+    }
+
+    @GetMapping("/test-ip")
+    public ResponseEntity<String> testCurrentIP() {
+        return ResponseEntity.ok("You're accessing the security-server with IP: " + serverIp);
     }
 }

@@ -27,6 +27,8 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/reset-request", "/auth/reset-password").permitAll()
                         .pathMatchers(HttpMethod.POST, "/auth/create-request").hasRole("CREATOR")
+                        .pathMatchers(HttpMethod.GET, "/auth/test-ip").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/auth/test-ip/**").authenticated()
 
                         .pathMatchers(HttpMethod.POST, "/post-questionnaires/**", "/diagnostic-sheets/**", "/pre-questionnaires/**").hasAnyRole("USER", "CREATOR")
                         .pathMatchers("/post-questionnaires/**", "/diagnostic-sheets/**", "/pre-questionnaires/**", "/diagram-detail-changes/**").hasRole("CREATOR")
