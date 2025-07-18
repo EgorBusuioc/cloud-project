@@ -1,5 +1,6 @@
 server:
   port: 8080
+  ip: ${CUSTOM_SERVER_IP:localhost}
 
 springdoc:
   api-docs:

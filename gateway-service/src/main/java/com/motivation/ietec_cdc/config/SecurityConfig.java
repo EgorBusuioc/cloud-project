@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/security-swagger/**", "/data-swagger/**").permitAll()
                         .pathMatchers("/user/**").hasRole("USER")
                         .pathMatchers("/creator/**").hasRole("CREATOR")
+
+                        .pathMatchers("/actuator/**", "/check/**").permitAll()
                         .anyExchange().authenticated()
                 )
                 .exceptionHandling(ex -> ex

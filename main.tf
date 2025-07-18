@@ -6,7 +6,7 @@ variable "group_number" {
 locals {
   auth_url        = "https://10.32.4.29:5000/v3"
   user_name       = "CloudComp7"
-  user_password   = ""
+  user_password   = "demo"
   tenant_name     = "CloudComp${var.group_number}"
   router_name     = "CloudComp${var.group_number}-router"
   image_name      = "ubuntu-22.04-jammy-server-cloud-image-amd64"
@@ -15,7 +15,7 @@ locals {
   floating_net    = "ext_net"
   dns_nameservers = ["10.33.16.100"]
 
-  # Используем другой CIDR
+  # Use a different CIDR
   subnet_cidr     = "192.168.254.0/24"
 
   # Static IP addresses for Eureka and MySQL
@@ -32,7 +32,7 @@ locals {
     }
   }
 
-  # Dynamic Services (без fixed_ip)
+  # Dynamic Services (without fixed_ip)
   dynamic_instances = {
     gateway1 = {
       docker_image = "busuiocegor/cloud-project:gateway-service"
@@ -54,17 +54,7 @@ locals {
       docker_port = 8083
       type = "security"
     },
-    security3 = {
-      docker_image = "busuiocegor/cloud-project:security-service"
-      docker_port = 8083
-      type = "security"
-    },
-    notification1 = {
-      docker_image = "busuiocegor/cloud-project:notification-service"
-      docker_port = 8085
-      type = "notification"
-    },
-    notification2 = {
+    notification = {
       docker_image = "busuiocegor/cloud-project:notification-service"
       docker_port = 8085
       type = "notification"
@@ -188,7 +178,7 @@ resource "openstack_networking_subnet_v2" "subnet" {
   dns_nameservers = local.dns_nameservers
 }
 
-# Получаем данные о существующем маршрутизаторе
+# Get existing router data
 data "openstack_networking_router_v2" "router" {
   name = local.router_name
 }
@@ -198,7 +188,7 @@ output "router_external_gateway" {
   description = "External gateway ID for router"
 }
 
-# Присоединяем подсеть к маршрутизатору
+# Connect subnet to router
 resource "openstack_networking_router_interface_v2" "router_interface" {
   router_id = data.openstack_networking_router_v2.router.id
   subnet_id = openstack_networking_subnet_v2.subnet.id
@@ -230,7 +220,7 @@ resource "openstack_networking_port_v2" "dynamic_ports" {
 
   fixed_ip {
     subnet_id = openstack_networking_subnet_v2.subnet.id
-    # Не указываем ip_address, OpenStack назначит автоматически
+    # No ip_address specified, OpenStack will assign automatically
   }
 }
 
@@ -238,7 +228,7 @@ resource "openstack_networking_port_v2" "dynamic_ports" {
 resource "openstack_compute_instance_v2" "static_vms" {
   for_each = local.static_instances
 
-  name            = "instance-${each.key}"
+  name            = "${each.key}-service"
   image_name      = local.image_name
   flavor_name     = local.flavor_name
   key_pair        = openstack_compute_keypair_v2.terraform-keypair.name
@@ -331,7 +321,7 @@ EOF
 resource "openstack_compute_instance_v2" "dynamic_vms" {
   for_each = local.dynamic_instances
 
-  name            = "instance-${each.key}"
+  name            = "${each.key}-service"
   image_name      = local.image_name
   flavor_name     = local.flavor_name
   key_pair        = openstack_compute_keypair_v2.terraform-keypair.name
@@ -385,15 +375,15 @@ else
   echo "WARNING: Docker installation failed!"
 fi
 
-# Получаем IP-адрес для регистрации в Eureka
+# Get IP address for Eureka registration
 INSTANCE_IP=$(hostname -I | awk '{print $1}')
 echo "Instance IP address: $INSTANCE_IP"
     
-# Определяем тип сервиса и запускаем соответствующий контейнер
+# Define service type and start the corresponding container
 SERVICE_TYPE="${each.value.type}"
 echo "Service type: $SERVICE_TYPE"
 
-# Дополнительная пауза для гарантированного запуска Docker
+# Additional pause to ensure Docker is started
 sleep 10
     
 if [ "$SERVICE_TYPE" == "gateway" ]; then
@@ -474,7 +464,7 @@ resource "openstack_lb_pool_v2" "gateway_pool" {
   admin_state_up = true
 }
 
-# Gateway members для Load Balancer
+# Gateway members for Load Balancer
 resource "openstack_lb_member_v2" "gateway1_member" {
   pool_id        = openstack_lb_pool_v2.gateway_pool.id
   address        = openstack_networking_port_v2.dynamic_ports["gateway1"].all_fixed_ips[0]
@@ -505,9 +495,9 @@ resource "openstack_lb_member_v2" "gateway2_member" {
 resource "openstack_lb_monitor_v2" "gateway_monitor" {
   pool_id        = openstack_lb_pool_v2.gateway_pool.id
   type           = "HTTP"
-  delay          = 50
-  timeout        = 15
-  max_retries    = 8
+  delay          = 30
+  timeout        = 10
+  max_retries    = 3
   url_path       = "/actuator/health"
   http_method    = "GET"
   expected_codes = "200"
@@ -520,12 +510,12 @@ resource "openstack_networking_floatingip_associate_v2" "gateway_lb_fip_associat
   port_id     = openstack_lb_loadbalancer_v2.gateway_lb.vip_port_id
 }
 
-# Создание Floating IP для Eureka
+# Create Floating IP for Eureka
 resource "openstack_networking_floatingip_v2" "eureka_fip" {
   pool = local.floating_net
 }
 
-# Правильная привязка Floating IP к порту Eureka
+# Proper association of Floating IP to Eureka port
 resource "openstack_networking_floatingip_associate_v2" "eureka_fip_associate" {
   floating_ip = openstack_networking_floatingip_v2.eureka_fip.address
   port_id     = openstack_networking_port_v2.static_ports["eureka"].id
