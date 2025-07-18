@@ -5,7 +5,7 @@ variable "group_number" {
 
 locals {
   auth_url        = "https://10.32.4.29:5000/v3"
-  user_name       = "CloudComp"
+  user_name       = "CloudComp7"
   user_password   = ""
   tenant_name     = "CloudComp${var.group_number}"
   router_name     = "CloudComp${var.group_number}-router"
