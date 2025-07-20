@@ -141,7 +141,7 @@ Of course, using Kubernetes would automate many things, but for this implementat
 
 ### Note
 
-If you have any questions, please contact:
+If you have any questions, please contact:  
 Egor Busuioc: egor.busuioc@informatik.hs-fulda.de  
 Iuliia Shtal: iuliia.shtal@informatik.hs-fulda.de  
 Dmitrii Zalevskii: dmitrii.zalevskii@informatik.hs-fulda.de  
